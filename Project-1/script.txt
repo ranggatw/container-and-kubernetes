@@ -1,0 +1,118 @@
+Deploying WordPress as Traditional Application on Non-clustered Environment
+
+# 1. Intall and Update CentOS 7
+
+yum clean all                              // removes all the cache repositories
+yum repolist                              // show lists all enabled repositories
+yum update                                // update applications installed on a system
+
+
+# 2. Install and configure Apache Web Server with PHP support
+
+yum group list -v hidden |grep -i web     // show a list of availabe package group with flag web 
+yum group install web-browser             // install web server Apache Web Server
+yum group install php                     // install php latest version
+yum install php-mysql                     // install mysql DBMS server
+
+
+# 3. Install MariaDB
+
+yum group list -v hidden|grep -i maria    // search mariadb group
+yum group install mariadb mariadb-client  // install mariadb and mariadb-client
+
+
+# 4. Enable, Start and Test Apache Web Functionality
+
+rpm -qa|grep httpd                        //
+rpm -ql httpd|grep systemd                //
+
+systemctl status httpd                    // cek status httpd service
+systemctl status htcacheclean             // clear cache HTTP server
+systemctl enable httpd                    // enable httpd server
+systemctl start httpd                     // start server httpd
+systemctl status httpd                    // cek status httpd service
+
+// we can test with browser test to web server with curl
+curl http://localhost|grep -i test
+
+
+# 5. Enable, Start, and Test PHP Functionality
+
+rpm -qa|grep php
+rpm -ql php 
+
+// Web test PHP
+
+cd /var/www/html                            // change directory to php localhost
+vi info.php                                 // edit info.php file 
+curl http://localhost/info/info.php|grep -i version
+
+
+# 6. Enable, Start and Configure MariaDB Service
+
+rpm -qa|grep mariadb                        // check package
+rpm -ql mariadb-server|grep systemd         // 
+
+systemctl status mariadb                    // cek status mariadb
+systemctl enable mariadb                    // enable mariadb-server
+systemctl status mariadb                    // cek status mariadb
+systemctl start mariadb                     // start mariadb service
+
+
+mysql_secure_installation                   // for install secure installation -> this program enables you to improve the security of your MySQL installation in the following ways: You can set a password for root accounts. You can remove root accounts that are accessible from outside the local host.
+> setup root password > y
+> remove anonymoud user  > y
+> disallow root login remotely > y 
+> remove test database and access it > y
+> reload privilage tables now > y
+> done
+
+
+# 7. Create Database and User in MariaDb for WordPress 
+
+mysql -u root -p                            // access databases with password
+> create databases wordpress;
+> create user wordpress@localhost identified by 'redhat';
+> grant all privileges on wordpress.* to wordpress@localhost identified by 'redhat';
+> flush privileges;
+> exit;
+
+
+# 8. Download, Install and Create Initial Configuration of Wordpress 
+
+php -v                                       // to check php version
+cd Downloads                                 // change directory to Downloads
+wget htpps://wordpress.org/wordpress-5.0.8.tar.gz   // download wordpress tar file
+ls
+ls -l
+tar xzf wordpress-5.0.8.tar.gz               // ekstract wordpress tar.gz
+ls -l
+cp -a wordpress /var/www/html
+cd /var/www/html
+mkdir wp-content/uploads 
+cp wp-config-sample.php wp-config.php 
+vi wp-config.php 
+> // ** MySQL settings - You can get this info from your web host ** //
+> /** The name of the database for WordPress */
+> define( 'DB_NAME', 'wordpress' );
+> /** MySQL database username */
+> define( 'DB_USER', 'wordpress' );
+> /** MySQL database password */
+> define( 'DB_PASSWORD', 'redhat' );
+> /** MySQL hostname */
+> define( 'DB_HOST', 'localhost' );
+
+cd ..
+chown -R apache:apache wordpress
+
+now you can access with browser url : http://hostname/wordpress
+
+
+##### Done ##### 
+We just finish Deploy with Traditional Deploy.
+
+
+
+systemctl start httpd                     // running http server
+curl http://localhost|grep -i test        // to check are web server is running correctly with flag include testing
+
